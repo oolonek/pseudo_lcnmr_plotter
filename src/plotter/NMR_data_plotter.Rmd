@@ -1,0 +1,151 @@
+---
+title: "NMR Data plotter"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+
+Load the required libraries. If you don't have them installed, please do by running install.packages()
+
+```{r}
+library(plotly)
+library(stringr)
+library(reshape2)
+library(dplyr)
+library(readr)
+
+```
+
+
+Load the NMR binned csv. Just adapt the path to location of your file. You can use autocompletion using the tab key
+
+```{r}
+Binning_Fusarium_sh1 <- read_csv("../../data/Binning_Fusarium_matz_center.csv")
+```
+
+Lets have a look at the first rows of this file 
+
+```{r}
+head(Binning_Fusarium_sh1)
+```
+
+OK. Be sure to have ppm on the columns and fraction numbers as rows.
+Now we transform the dataframe as a matrix
+
+```{r}
+DTz <- as.matrix(data.frame(Binning_Fusarium_sh1))
+```
+
+Lets have a look at the structure of the file 
+
+```{r}
+str(DTz)
+```
+
+Now we'll remove the row indexes
+
+```{r}
+DTz <- DTz[,-1] 
+```
+
+And we set the matrix row and colnames according to the ones of the df
+
+```{r}
+colnames(DTz) <- colnames(Binning_Fusarium_sh1)[-1]
+rownames(DTz) <- rownames(Binning_Fusarium_sh1)
+
+```
+Let's transform these data in the long form
+
+```{r}
+
+mtrx.melt <- melt(DTz, id.vars = c('sample', 'ppm'), measure.vars = 'int')
+names(mtrx.melt) <- c('sample', 'ppm', 'int')
+
+```
+
+Now we can plot a quick 3Dplot to have an overview of the data
+
+```{r}
+
+p <- plot_ly(z = ~DTz) %>% add_surface()
+
+p
+```
+
+OK so now we want to remove the annoying signals corresponding to the solvents.
+We can check at the colunms name and note their numbers. Example its DMSO > signals at 2.5 ppm I want to delete columns 350,351 and 352.
+
+```{r}
+
+colnames(DTz)
+```
+
+```{r}
+
+DTzred <- DTz[,-348:-352]
+
+```
+
+Now lets plot again .... Does it looks better ? 
+
+```{r}
+p <- plot_ly(z = ~DTzred) %>% add_surface()
+
+p
+```
+
+Else repeat the previous step
+For this execute the following code. Be sure to run it on the previously cleaned object. In this case DTzred
+Be sure to check again the columns numbers sinsce these have changed 
+
+
+```{r eval=FALSE}
+colnames(DTzred)
+DTzred <- DTzred[,-348:-352]
+```
+
+Now that you have the cleaned data object lets have a look at the 2d map. Be patient, this one is longer to plot.
+
+```{r}
+p <- plot_ly(mtrx.melt, x = ~sample, y = ~ppm, z = ~int, type = "contour",
+             colors = 'YlOrRd',
+             autocontour = F,
+             contours = list(
+               start = 10000,
+               end = 1200000,
+               size = 5000
+             )
+            )
+
+p
+
+```
+
+If you want to plot the map with ppm on the x-axis just reverse the axis order. Play with start value (to fix the noise) and size value to fix the contour space. Change color if you wish by changing the color field. For more info on 2d contour plot with plotly check https://plot.ly/r/contour-plots/
+
+```{r}
+
+p <- plot_ly(mtrx.melt, x = ~ppm, y = ~sample, z = ~int, type = "contour",
+             autocontour = F,
+             colors = 'YlOrRd',
+             contours = list(
+               start = 10000,
+               end = 1200000,
+               size = 50000
+             )
+            ) %>% layout(xaxis = list(autorange = "reversed"))
+
+p
+
+```
+
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
