@@ -25,7 +25,7 @@ library(readr)
 Load the NMR binned csv. Just adapt the path to location of your file. You can use autocompletion using the tab key
 
 ```{r}
-Binning_Fusarium_sh1 <- read_csv("../../data/Binning_Fusarium_matz_center.csv")
+Binning_Fusarium_sh1 <- read_csv("../../data/Binning_Fusarium_matz_center_named.csv")
 ```
 
 Lets have a look at the first rows of this file 
