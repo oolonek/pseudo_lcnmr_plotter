@@ -87,9 +87,9 @@ Here we want to get rid of the signals of DMSO at 2.5 ppm so we can subset the d
 # we turn the matrix as a df
 DTz_df <- as.data.frame(DTz)
 
-# and remove columns starting with the chemical shift we want to avoid, here DMSO signals a 2.5 ppm
+# and remove columns starting with the chemical shift we want to avoid, here DMSO signals a 2.5 ppm and H2O at 3.3
 DTz_df_sub <- DTz_df %>% 
-  select(!starts_with(c('2.4', '2.5')))
+  select(!starts_with(c('2.4', '2.5', '3.3')))
 
 # we turn this df back as a numerical matrix
 DTz_mat_sub <- as.matrix(DTz_df_sub)
@@ -130,12 +130,14 @@ If you want to plot the map with ppm on the x-axis just reverse the axis order. 
 
 ```{r}
 
+
+
 p <- plot_ly(mtrx.melt_sub, x = ~ppm, y = ~sample, z = ~int, type = "contour",
              autocontour = F,
              colors = 'YlOrRd',
              contours = list(
                start = 10000,
-               end = 7470000,
+               end = max(mtrx.melt_sub$int),
                size = 20000
              )
             ) %>% layout(xaxis = list(autorange = "reversed"))
