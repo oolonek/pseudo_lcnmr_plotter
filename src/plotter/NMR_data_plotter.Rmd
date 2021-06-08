@@ -119,7 +119,7 @@ p <- plot_ly(mtrx.melt_sub, x = ~sample, y = ~ppm, z = ~int, type = "contour",
              autocontour = F,
              contours = list(
                start = 10000,
-               end = 1200000,
+               end = max(mtrx.melt_sub$int),
                size = 5000
              )
             )
@@ -143,6 +143,6 @@ p <- plot_ly(mtrx.melt_sub, x = ~ppm, y = ~sample, z = ~int, type = "contour",
             ) %>% layout(xaxis = list(autorange = "reversed"))
 
 p
-htmlwidgets::saveWidget(as_widget(p), "2dNMR.html")
+htmlwidgets::saveWidget(as_widget(p), "../../docs/2dNMR.html")
 ```
 
