@@ -67,6 +67,8 @@ Let's transform these data in the long form
 mtrx.melt <- melt(DTz, id.vars = c('sample', 'ppm'), measure.vars = 'int')
 names(mtrx.melt) <- c('sample', 'ppm', 'int')
 
+
+
 ```
 
 Now we can plot a quick 3Dplot to have an overview of the data
@@ -79,41 +81,40 @@ p
 ```
 
 OK so now we want to remove the annoying signals corresponding to the solvents.
-We can check at the colunms name and note their numbers. Example its DMSO > signals at 2.5 ppm I want to delete columns 350,351 and 352.
+Here we want to get rid of the signals of DMSO at 2.5 ppm so we can subset the df and remove columns starting with this shift
 
 ```{r}
+# we turn the matrix as a df
+DTz_df <- as.data.frame(DTz)
 
-colnames(DTz)
-```
+# and remove columns starting with the chemical shift we want to avoid, here DMSO signals a 2.5 ppm
+DTz_df_sub <- DTz_df %>% 
+  select(!starts_with(c('2.4', '2.5')))
 
-```{r}
-
-DTzred <- DTz[,-348:-352]
-
+# we turn this df back as a numerical matrix
+DTz_mat_sub <- as.matrix(DTz_df_sub)
 ```
 
 Now lets plot again .... Does it looks better ? 
 
 ```{r}
-p <- plot_ly(z = ~DTzred) %>% add_surface()
+p <- plot_ly(z = ~DTz_mat_sub) %>% add_surface()
 
 p
 ```
 
-Else repeat the previous step
-For this execute the following code. Be sure to run it on the previously cleaned object. In this case DTzred
-Be sure to check again the columns numbers sinsce these have changed 
+We now turn this as a melted matrix
 
-
-```{r eval=FALSE}
-colnames(DTzred)
-DTzred <- DTzred[,-348:-352]
+```{r}
+mtrx.melt_sub <- melt(DTz_mat_sub, id.vars = c('sample', 'ppm'), measure.vars = 'int')
+names(mtrx.melt_sub) <- c('sample', 'ppm', 'int')
 ```
 
 Now that you have the cleaned data object lets have a look at the 2d map. Be patient, this one is longer to plot.
 
+
 ```{r}
-p <- plot_ly(mtrx.melt, x = ~sample, y = ~ppm, z = ~int, type = "contour",
+p <- plot_ly(mtrx.melt_sub, x = ~sample, y = ~ppm, z = ~int, type = "contour",
              colors = 'YlOrRd',
              autocontour = F,
              contours = list(
@@ -122,30 +123,24 @@ p <- plot_ly(mtrx.melt, x = ~sample, y = ~ppm, z = ~int, type = "contour",
                size = 5000
              )
             )
-
 p
-
 ```
 
 If you want to plot the map with ppm on the x-axis just reverse the axis order. Play with start value (to fix the noise) and size value to fix the contour space. Change color if you wish by changing the color field. For more info on 2d contour plot with plotly check https://plot.ly/r/contour-plots/
 
 ```{r}
 
-p <- plot_ly(mtrx.melt, x = ~ppm, y = ~sample, z = ~int, type = "contour",
+p <- plot_ly(mtrx.melt_sub, x = ~ppm, y = ~sample, z = ~int, type = "contour",
              autocontour = F,
              colors = 'YlOrRd',
              contours = list(
                start = 10000,
-               end = 1200000,
-               size = 50000
+               end = 7470000,
+               size = 20000
              )
             ) %>% layout(xaxis = list(autorange = "reversed"))
 
 p
-
+htmlwidgets::saveWidget(as_widget(p), "2dNMR.html")
 ```
 
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
